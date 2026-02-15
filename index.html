@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         :root {
             --color-a: #f44336; --color-e: #4caf50; --color-i: #ffeb3b; 
@@ -9,18 +11,11 @@
             --color-renglon: #e0e0e0;
         }
         body { font-family: 'Arial', sans-serif; background: #fafafa; display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        
-        /* Contenedor superior para el Basurero y ABC */
         .top-nav { display: flex; gap: 15px; margin-bottom: 20px; align-items: center; }
-        
         .sections-nav { display: flex; gap: 10px; margin-bottom: 30px; flex-wrap: wrap; justify-content: center; }
         .nav-btn { padding: 12px 24px; border-radius: 25px; border: 2px solid #ddd; background: white; cursor: pointer; font-weight: bold; color: #666; transition: all 0.3s; font-size: 1rem; }
         .nav-btn.active { background: #2196f3; color: white; border-color: #2196f3; box-shadow: 0 4px 0 #1976D2; }
-        
-        /* Botón Basura */
         .trash-btn { background: #ff5252; color: white; border-color: #ff5252; font-size: 1.2rem; padding: 10px 18px; }
-        .trash-btn:active { transform: translateY(2px); box-shadow: none; }
-
         .section { display: none; width: 100%; max-width: 900px; }
         .section.active { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; }
         .letter-card { width: 140px; height: 190px; background: white; border-radius: 15px; display: flex; flex-direction: column; align-items: center; position: relative; cursor: pointer; box-shadow: 0 6px 0 #ddd; border: 3px solid #eee; overflow: hidden; margin-bottom: 10px; }
@@ -28,33 +23,55 @@
         .mini-label { position: absolute; top: 10px; left: 12px; font-size: 1.8rem; color: #bbb; font-weight: bold; }
         svg { width: 110px; height: 90px; margin-top: 45px; display: block; }
         .renglon { stroke: var(--color-renglon); stroke-width: 1; fill: none; }
-        .punteado { stroke-dasharray: 4 4; }
+        .renglon-centro { stroke-dasharray: 4,4; } 
         .suelo { stroke: #cccccc; stroke-width: 1.5; }
-        path.trazo { fill: none; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1000; stroke-dashoffset: 1000; stroke: var(--color-cons); }
-        .mayus-path { stroke-width: 10; }
-        .minus-path { stroke-width: 7; }
-        .puente-rojo { fill: none; stroke: #f44336; stroke-width: 2.5; opacity: 0.6; stroke-linecap: round; }
         
-        /* GROSORES ESPECÍFICOS PARA DIPTONGOS */
-        .diptongo-card .dipt-path-min { stroke: var(--color-dipt) !important; stroke-width: 6; }
-        .diptongo-card .dipt-path-may { stroke: var(--color-dipt) !important; stroke-width: 8; }
+        /* LOGICA DE ANIMACIÓN CORREGIDA */
+        path.trazo { fill: none; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1000; stroke-dashoffset: 1000; stroke: var(--color-cons); }
+        .animating path.trazo { animation: draw 0.8s linear forwards; }
+        
+        /* FORZAR VISIBILIDAD SOLO EN CONSTRUCTOR */
+        .mini-card path.trazo { stroke-dashoffset: 0 !important; }
 
-        /* ANIMACIÓN ACELERADA */
-        .animating .t1 { animation: draw 0.8s linear forwards; }
-        .animating .t2 { animation: draw 0.7s linear forwards 0.8s; }
-        .animating .t3 { animation: draw 0.6s linear forwards 1.5s; }
-        .animating .t4 { animation: draw 0.6s linear forwards 2.1s; }
-        .animating .t5 { animation: draw 0.6s linear forwards 2.7s; }
+        .mayus-path { stroke-width: 10 !important; }
+        .minus-path { stroke-width: 7 !important; }
+        
+        .diptongo-card .trazo, .silaba-card .trazo { stroke-width: 7; }
+        .active-mayus .diptongo-card .trazo, .active-mayus .silaba-card .trazo { stroke-width: 10; }
+        .diptongo-card .trazo { stroke: var(--color-dipt) !important; }
+
+        .card-A .trazo, .card-a .trazo, .v-a { stroke: var(--color-a) !important; } 
+        .card-E .trazo, .card-e .trazo, .v-e { stroke: var(--color-e) !important; }
+        .card-I .trazo, .card-i .trazo, .v-i { stroke: var(--color-i) !important; } 
+        .card-O .trazo, .card-o .trazo, .v-o { stroke: var(--color-o) !important; }
+        .card-U .trazo, .card-u .trazo, .v-u { stroke: var(--color-u) !important; }
+
+        .puente-rojo { fill: none; stroke: #f44336; stroke-width: 2.5; opacity: 0.6; stroke-linecap: round; }
+
+        .animating .t1 { animation-duration: 0.8s !important; }
+        .animating .t2 { animation-delay: 0.8s !important; animation-duration: 0.7s !important; }
+        .animating .t3 { animation-delay: 1.5s !important; animation-duration: 0.6s !important; }
+        .animating .t4 { animation-delay: 2.1s !important; animation-duration: 0.6s !important; }
+        .animating .t5 { animation-delay: 2.7s !important; animation-duration: 0.5s !important; }
+        .animating .t6 { animation-delay: 3.2s !important; animation-duration: 0.5s !important; }
+        .animating .t7 { animation-delay: 3.7s !important; animation-duration: 0.5s !important; }
 
         @keyframes draw { to { stroke-dashoffset: 0; } }
         .label { margin-top: 5px; font-weight: bold; color: #444; font-size: 2.5rem; }
+
+        .constructor-grid { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 40px; padding: 10px; border-bottom: 2px dashed #ddd; width: 100%; }
+        .mini-card { width: 90px; height: 90px; background: white; border-radius: 12px; border: 2px solid #eee; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 0 #ddd; position: relative; }
+        .mini-card svg { width: 80%; height: 80%; margin: 0; }
+        .word-line { display: flex; align-items: center; gap: 15px; min-height: 120px; background: #fff; padding: 20px; border-radius: 20px; border: 3px solid #2196f3; width: 95%; max-width: 800px; }
+        .speaker-btn { font-size: 3rem; cursor: pointer; }
+        .word-container { display: flex; gap: 10px; flex-wrap: wrap; flex-grow: 1; }
     </style>
 </head>
-<body>
+<body id="main-body" class="active-mayus">
 
     <div class="top-nav">
         <button id="btn-switch" class="nav-btn active" onclick="toggleModo()">ABC</button>
-        <button class="nav-btn trash-btn" onclick="limpiarTodo()" title="Limpiar todo">🗑️</button>
+        <button class="nav-btn trash-btn" onclick="limpiarTodo()">🗑️</button>
     </div>
 
     <div class="sections-nav">
@@ -62,24 +79,40 @@
         <button id="btn-consonantes" class="nav-btn" onclick="cambiarSeccion('consonantes')">Consonantes 1</button>
         <button id="btn-completo" class="nav-btn" onclick="cambiarSeccion('completo')">Abecedario</button>
         <button id="btn-diptongos" class="nav-btn" onclick="cambiarSeccion('diptongos')">Diptongos</button>
+        <button id="btn-silabas" class="nav-btn" onclick="cambiarSeccion('silabas')">Sílabas 1</button>
+        <button id="btn-constructor" class="nav-btn" onclick="cambiarSeccion('constructor')">Constructor 🏗️</button>
     </div>
 
     <div id="vocales" class="section active"></div>
     <div id="consonantes" class="section"></div>
     <div id="completo" class="section"></div>
     <div id="diptongos" class="section"></div>
+    <div id="silabas" class="section"></div>
+    
+    <div id="constructor" class="section">
+        <div class="constructor-grid" id="constructor-pool"></div>
+        <div class="word-line">
+            <div class="speaker-btn" onclick="leerPalabra()">🔊</div>
+            <div class="word-container" id="word-builder"></div>
+        </div>
+    </div>
 
     <script>
-        const RENGLONES_SVG = `<line class="renglon" x1="0" y1="20" x2="120" y2="20" /><line class="renglon punteado" x1="0" y1="50" x2="120" y2="50" /><line class="renglon suelo" x1="0" y1="80" x2="120" y2="80" />`;
+        const RENGLONES_SVG = `
+            <line class="renglon" x1="0" y1="20" x2="120" y2="20" />
+            <line class="renglon renglon-centro" x1="0" y1="50" x2="120" y2="50" />
+            <line class="renglon suelo" x1="0" y1="80" x2="120" y2="80" />`;
+            
         let modoMayuscula = true;
         let seccionActual = 'vocales';
         let audioActual = null;
+        let palabraActual = [];
 
         const DATA_LETRAS = {
             "A": { m: "a", e: "✈️", url: "https://res.cloudinary.com/difuwmfsx/video/upload/v1771110383/A_avion_nxryqy.mp3", pathMay: '<path class="trazo t1 mayus-path" d="M 50,20 L 25,80" /><path class="trazo t2 mayus-path" d="M 50,20 L 75,80" /><path class="trazo t3 mayus-path" d="M 35,55 L 65,55" />', pathMin: '<path class="trazo t1 minus-path" d="M 70,65 A 15,15 0 1,0 40,65 A 15,15 0 1,0 70,65" /><path class="trazo t2 minus-path" d="M 70,50 L 70,80" />' },
             "B": { m: "b", e: "🎈", url: "https://res.cloudinary.com/difuwmfsx/video/upload/v1771110384/B_balun_cpvoxe.mp3", pathMay: '<path class="trazo t1 mayus-path" d="M 30,20 L 30,80" /><path class="trazo t2 mayus-path" d="M 30,20 C 65,20 65,50 30,50" /><path class="trazo t3 mayus-path" d="M 30,50 C 70,50 70,80 30,80" />', pathMin: '<path class="trazo t1 minus-path" d="M 35,20 L 35,80" /><path class="trazo t2 minus-path" d="M 35,65 A 15,15 0 1,1 65,65 A 15,15 0 1,1 35,65" />' },
             "C": { m: "c", e: "🏠", url: "https://res.cloudinary.com/difuwmfsx/video/upload/v1771110385/C_Casa_ohlweb.mp3", pathMay: '<path class="trazo t1 mayus-path" d="M 70,30 C 70,10 25,10 25,50 C 25,90 70,90 70,70" />', pathMin: '<path class="trazo t1 minus-path" d="M 70,60 C 70,50 40,50 40,65 C 40,80 70,80 70,70" />' },
-            "D": { m: "d", e: "🎲", url: "https://res.cloudinary.com/difuwmfsx/video/upload/v1771110354/D_Dado_kfweqv.mp3", pathMay: '<path class="trazo t1 mayus-path" d="M 65,20 L 65,80" /><path class="trazo t2 mayus-path" d="M 65,20 C 85,20 85,80 35,80" />', pathMin: '<path class="trazo t1 minus-path" d="M 65,65 A 15,15 0 1,0 35,65 A 15,15 0 1,0 65,65" /><path class="trazo t2 minus-path" d="M 65,20 L 65,80" />' },
+            "D": { m: "d", e: "🎲", url: "https://res.cloudinary.com/difuwmfsx/video/upload/v1771110354/D_Dado_kfweqv.mp3", pathMay: '<path class="trazo t1 mayus-path" d="M 40,20 L 40,80" /><path class="trazo t2 mayus-path" d="M 40,20 C 85,20 85,80 40,80" />', pathMin: '<path class="trazo t1 minus-path" d="M 70,65 A 15,15 0 1,0 40,65 A 15,15 0 1,0 70,65" /><path class="trazo t2 minus-path" d="M 70,20 L 70,80" />' },
             "E": { m: "e", e: "🐘", url: "https://res.cloudinary.com/difuwmfsx/video/upload/v1771110353/E_Elefante_txudbg.mp3", pathMay: '<path class="trazo t1 mayus-path" d="M 35,20 L 35,80" /><path class="trazo t2 mayus-path" d="M 35,20 L 75,20" /><path class="trazo t3 mayus-path" d="M 35,50 L 65,50" /><path class="trazo t4 mayus-path" d="M 35,80 L 75,80" />', pathMin: '<path class="trazo t1 minus-path" d="M 30,65 L 70,65 C 70,40 30,40 30,65 C 30,90 75,90 75,75" />' },
             "F": { m: "f", e: "🍓", url: "https://res.cloudinary.com/difuwmfsx/video/upload/v1771110354/F_Fresa_wlkj5i.mp3", pathMay: '<path class="trazo t1 mayus-path" d="M 35,20 L 35,80" /><path class="trazo t2 mayus-path" d="M 35,20 L 70,20" /><path class="trazo t3 mayus-path" d="M 35,50 L 60,50" />', pathMin: '<path class="trazo t1 minus-path" d="M 65,20 C 50,20 40,25 40,40 L 40,80" /><path class="trazo t2 minus-path" d="M 30,50 L 55,50" />' },
             "G": { m: "g", e: "🐱", url: "https://res.cloudinary.com/difuwmfsx/video/upload/v1771110354/G_Gato_q832fd.mp3", pathMay: '<path class="trazo t1 mayus-path" d="M 70,30 C 70,10 25,10 25,50 C 25,90 70,90 70,60" /><path class="trazo t2 mayus-path" d="M 70,60 L 50,60" />', pathMin: '<path class="trazo t1 minus-path" d="M 65,65 A 15,15 0 1,0 35,65 A 15,15 0 1,0 65,65" /><path class="trazo t2 minus-path" d="M 65,50 L 65,90 C 65,105 35,105 35,95" />' },
@@ -90,9 +123,9 @@
             "L": { m: "l", e: "🦁", url: "https://res.cloudinary.com/difuwmfsx/video/upload/v1771110356/L_Leon_elkmke.mp3", pathMay: '<path class="trazo t1 mayus-path" d="M 35,20 L 35,80" /><path class="trazo t2 mayus-path" d="M 35,80 L 70,80" />', pathMin: '<path class="trazo t1 minus-path" d="M 50,20 L 50,80" />' },
             "M": { m: "m", e: "🍎", url: "https://res.cloudinary.com/difuwmfsx/video/upload/v1771110356/M_manzana_fi3cjn.mp3", pathMay: '<path class="trazo t1 mayus-path" d="M 20,20 L 20,80" /><path class="trazo t2 mayus-path" d="M 20,20 L 50,60" /><path class="trazo t3 mayus-path" d="M 80,20 L 50,60" /><path class="trazo t4 mayus-path" d="M 80,20 L 80,80" />', pathMin: '<path class="trazo t1 minus-path" d="M 25,50 L 25,80" /><path class="trazo t2 minus-path" d="M 25,55 C 25,40 50,40 50,55 L 50,80" /><path class="trazo t3 minus-path" d="M 50,55 C 50,40 75,40 75,55 L 75,80" />' },
             "N": { m: "n", e: "☁️", url: "https://res.cloudinary.com/difuwmfsx/video/upload/v1771110357/N_nube_npkdqu.mp3", pathMay: '<path class="trazo t1 mayus-path" d="M 30,20 L 30,80" /><path class="trazo t2 mayus-path" d="M 30,20 L 70,80" /><path class="trazo t3 mayus-path" d="M 70,20 L 70,80" />', pathMin: '<path class="trazo t1 minus-path" d="M 35,50 L 35,80" /><path class="trazo t2 minus-path" d="M 35,60 C 35,45 65,45 65,60 L 65,80" />' },
-            "Ñ": { m: "ñ", e: "🦒", url: "https://res.cloudinary.com/difuwmfsx/video/upload/v1771110360/%C3%91_%C3%B1andu_vgi2jt.mp3", pathMay: '<path class="trazo t1 mayus-path" d="M 30,20 L 30,80" /><path class="trazo t2 mayus-path" d="M 30,20 L 70,80" /><path class="trazo t3 mayus-path" d="M 70,20 L 70,80" /><path class="trazo t4 mayus-path" d="M 30,10 C 40,0 60,0 70,10" />', pathMin: '<path class="trazo t1 minus-path" d="M 35,50 L 35,80" /><path class="trazo t2 minus-path" d="M 35,60 C 35,45 65,45 65,60 L 65,80" /><path class="trazo t3 minus-path" d="M 35,40 C 40,30 60,30 65,40" />' },
+            "Ñ": { m: "ñ", e: "🦓", url: "https://res.cloudinary.com/difuwmfsx/video/upload/v1771110360/%C3%91_%C3%B1andu_vgi2jt.mp3", pathMay: '<path class="trazo t1 mayus-path" d="M 30,20 L 30,80" /><path class="trazo t2 mayus-path" d="M 30,20 L 70,80" /><path class="trazo t3 mayus-path" d="M 70,20 L 70,80" /><path class="trazo t4 mayus-path" d="M 30,10 C 40,0 60,0 70,10" />', pathMin: '<path class="trazo t1 minus-path" d="M 35,50 L 35,80" /><path class="trazo t2 minus-path" d="M 35,60 C 35,45 65,45 65,60 L 65,80" /><path class="trazo t3 minus-path" d="M 35,40 C 40,30 60,30 65,40" />' },
             "O": { m: "o", e: "🐻", url: "https://res.cloudinary.com/difuwmfsx/video/upload/v1771110359/O_oso_ek3lrs.mp3", pathMay: '<path class="trazo t1 mayus-path" d="M 50,20 A 30,30 0 1,0 50.1,20" />', pathMin: '<path class="trazo t1 minus-path" d="M 50,65 A 15,15 0 1,0 50,65.1" />' },
-            "P": { m: "p", e: "🐶", url: "https://res.cloudinary.com/difuwmfsx/video/upload/v1771110374/P_perro_uwtp45.mp3", pathMay: '<path class="trazo t1 mayus-path" d="M 30,20 L 30,80" /><path class="trazo t2 mayus-path" d="M 30,20 C 65,20 65,50 30,50" />', pathMin: '<path class="trazo t1 minus-path" d="M 30,50 L 30,100" /><path class="trazo t2 minus-path" d="M 60,65 A 15,15 0 1,0 30,65" />' },
+            "P": { m: "p", e: "🐶", url: "https://res.cloudinary.com/difuwmfsx/video/upload/v1771110374/P_perro_uwtp45.mp3", pathMay: '<path class="trazo t1 mayus-path" d="M 30,20 L 30,80" /><path class="trazo t2 mayus-path" d="M 30,20 C 65,20 65,50 30,50" />', pathMin: '<path class="trazo t1 minus-path" d="M 30,50 L 30,100" /><path class="trazo t2 minus-path" d="M 30,50 C 65,50 65,80 30,80" />' },
             "Q": { m: "q", e: "🧀", url: "https://res.cloudinary.com/difuwmfsx/video/upload/v1771110373/Q_queso_yslsld.mp3", pathMay: '<path class="trazo t1 mayus-path" d="M 50,20 A 30,30 0 1,0 50.1,20" /><path class="trazo t2 mayus-path" d="M 60,60 L 85,85" />', pathMin: '<path class="trazo t1 minus-path" d="M 65,65 A 15,15 0 1,0 35,65 A 15,15 0 1,0 65,65" /><path class="trazo t2 minus-path" d="M 65,50 L 65,100" />' },
             "R": { m: "r", e: "🐀", url: "https://res.cloudinary.com/difuwmfsx/video/upload/v1771110374/R_raton_r2xe7o.mp3", pathMay: '<path class="trazo t1 mayus-path" d="M 30,20 L 30,80" /><path class="trazo t2 mayus-path" d="M 30,20 C 65,20 65,50 30,50" /><path class="trazo t3 mayus-path" d="M 30,50 L 70,80" />', pathMin: '<path class="trazo t1 minus-path" d="M 40,50 L 40,80" /><path class="trazo t2 minus-path" d="M 40,65 C 40,55 65,55 65,60" />' },
             "S": { m: "s", e: "☀️", url: "https://res.cloudinary.com/difuwmfsx/video/upload/v1771110374/S_sol_siszou.mp3", pathMay: '<path class="trazo t1 mayus-path" d="M 70,30 C 70,10 30,10 30,35 C 30,55 70,45 70,65 C 70,90 30,90 30,75" />', pathMin: '<path class="trazo t1 minus-path" d="M 65,55 C 65,45 35,45 35,55 C 35,65 65,65 65,75 C 65,85 35,85 35,75" />' },
@@ -106,32 +139,37 @@
         };
 
         const DATA_DIPTONGOS = {
-            "ue": { e: "🥚", url: "https://res.cloudinary.com/difuwmfsx/video/upload/v1771126880/UE_py9kil.mp3", 
-                pathMay: '<g><path class="trazo t1 dipt-path-may" d="M 15,20 L 15,60 C 15,80 45,80 45,60 L 45,20" /><path class="trazo t2 dipt-path-may" d="M 65,20 L 65,80" /><path class="trazo t3 dipt-path-may" d="M 65,20 L 100,20" /><path class="trazo t4 dipt-path-may" d="M 65,50 L 95,50" /><path class="trazo t5 dipt-path-may" d="M 65,80 L 100,80" /></g>',
-                pathMin: '<g><path class="trazo t1 dipt-path-min" d="M 20,50 L 20,65 C 20,80 50,80 50,65 L 50,50" /><path class="trazo t2 dipt-path-min" d="M 50,50 L 50,80" /><path class="trazo t3 dipt-path-min" d="M 65,65 L 100,65 C 100,40 65,40 65,65 C 65,90 105,90 105,75" /></g>' },
-            "ua": { e: "💧", url: "https://res.cloudinary.com/difuwmfsx/video/upload/v1771126879/UA_gr2h4a.mp3", 
-                pathMay: '<g><path class="trazo t1 dipt-path-may" d="M 15,20 L 15,60 C 15,80 45,80 45,60 L 45,20" /><path class="trazo t2 dipt-path-may" d="M 85,20 L 70,80" /><path class="trazo t3 dipt-path-may" d="M 85,20 L 100,80" /><path class="trazo t4 dipt-path-may" d="M 75,55 L 95,55" /></g>',
-                pathMin: '<g><path class="trazo t1 dipt-path-min" d="M 20,50 L 20,65 C 20,80 50,80 50,65 L 50,50" /><path class="trazo t2 dipt-path-min" d="M 50,50 L 50,80" /><path class="trazo t3 dipt-path-min" d="M 95,65 A 12,12 0 1,0 71,65 A 12,12 0 1,0 95,65" /><path class="trazo t4 dipt-path-min" d="M 95,50 L 95,80" /></g>' },
-            "io": { e: "✈️", url: "https://res.cloudinary.com/difuwmfsx/video/upload/v1771126877/IO_r7ddvp.mp3", 
-                pathMay: '<g><path class="trazo t1 dipt-path-may" d="M 30,20 L 30,80" /><path class="trazo t2 dipt-path-may" d="M 60,50 A 25,30 0 1,0 110,50 A 25,30 0 1,0 60,50" /></g>',
-                pathMin: '<g><path class="trazo t1 dipt-path-min" d="M 25,50 L 25,80" /><path class="trazo t2 dipt-path-min" d="M 25,35 L 25.1,35" /><path class="trazo t3 dipt-path-min" d="M 50,65 A 15,15 0 1,0 80,65 A 15,15 0 1,0 50,65" /></g>' },
-            "ie": { e: "🧊", url: "https://res.cloudinary.com/difuwmfsx/video/upload/v1771126876/IE_lyt5sf.mp3", 
-                pathMay: '<g><path class="trazo t1 dipt-path-may" d="M 30,20 L 30,80" /><path class="trazo t2 dipt-path-may" d="M 65,20 L 65,80" /><path class="trazo t3 dipt-path-may" d="M 65,20 L 100,20" /><path class="trazo t4 dipt-path-may" d="M 65,50 L 95,50" /><path class="trazo t5 dipt-path-may" d="M 65,80 L 100,80" /></g>',
-                pathMin: '<g><path class="trazo t1 dipt-path-min" d="M 25,50 L 25,80" /><path class="trazo t2 dipt-path-min" d="M 25,35 L 25.1,35" /><path class="trazo t3 dipt-path-min" d="M 60,65 L 95,65 C 95,40 60,40 60,65 C 60,90 100,90 100,75" /></g>' },
-            "ai": { e: "🐊", url: "https://res.cloudinary.com/difuwmfsx/video/upload/v1771126875/AI_gtf3bw.mp3", 
-                pathMay: '<g><path class="trazo t1 dipt-path-may" d="M 30,20 L 15,80" /><path class="trazo t2 dipt-path-may" d="M 30,20 L 45,80" /><path class="trazo t3 dipt-path-may" d="M 22,55 L 38,55" /><path class="trazo t4 dipt-path-may" d="M 75,20 L 75,80" /></g>',
-                pathMin: '<g><path class="trazo t1 dipt-path-min" d="M 50,65 A 12,12 0 1,0 26,65 A 12,12 0 1,0 50,65" /><path class="trazo t2 dipt-path-min" d="M 50,50 L 50,80" /><path class="trazo t3 dipt-path-min" d="M 75,50 L 75,80" /><path class="trazo t4 dipt-path-min" d="M 75,35 L 75.1,35" /></g>' }
+            "ue": { e: "🥚", url: "https://res.cloudinary.com/difuwmfsx/video/upload/v1771126880/UE_py9kil.mp3", pathMay: '<g><path class="trazo t1" d="M 15,20 L 15,60 C 15,80 45,80 45,60 L 45,20" /><path class="trazo t2" d="M 65,20 L 65,80" /><path class="trazo t3" d="M 65,20 L 100,20" /><path class="trazo t4" d="M 65,50 L 95,50" /><path class="trazo t5" d="M 65,80 L 100,80" /></g>', pathMin: '<g><path class="trazo t1" d="M 20,50 L 20,65 C 20,80 50,80 50,65 L 50,50" /><path class="trazo t2" d="M 50,50 L 50,80" /><path class="trazo t3" d="M 65,65 L 100,65 C 100,40 65,40 65,65 C 65,90 105,90 105,75" /></g>' },
+            "ua": { e: "💧", url: "https://res.cloudinary.com/difuwmfsx/video/upload/v1771126879/UA_gr2h4a.mp3", pathMay: '<g><path class="trazo t1" d="M 15,20 L 15,60 C 15,80 45,80 45,60 L 45,20" /><path class="trazo t2" d="M 85,20 L 70,80" /><path class="trazo t3" d="M 85,20 L 100,80" /><path class="trazo t4" d="M 75,55 L 95,55" /></g>', pathMin: '<g><path class="trazo t1" d="M 20,50 L 20,65 C 20,80 50,80 50,65 L 50,50" /><path class="trazo t2" d="M 50,50 L 50,80" /><path class="trazo t3" d="M 95,65 A 12,12 0 1,0 71,65 A 12,12 0 1,0 95,65" /><path class="trazo t4" d="M 95,50 L 95,80" /></g>' },
+            "io": { e: "✈️", url: "https://res.cloudinary.com/difuwmfsx/video/upload/v1771126877/IO_r7ddvp.mp3", pathMay: '<g><path class="trazo t1" d="M 30,20 L 30,80" /><path class="trazo t2" d="M 60,50 A 25,30 0 1,0 110,50 A 25,30 0 1,0 60,50" /></g>', pathMin: '<g><path class="trazo t1" d="M 25,50 L 25,80" /><path class="trazo t2" d="M 25,35 L 25.1,35" /><path class="trazo t3" d="M 50,65 A 15,15 0 1,0 80,65 A 15,15 0 1,0 50,65" /></g>' },
+            "ie": { e: "🧊", url: "https://res.cloudinary.com/difuwmfsx/video/upload/v1771126876/IE_lyt5sf.mp3", pathMay: '<g><path class="trazo t1" d="M 30,20 L 30,80" /><path class="trazo t2" d="M 65,20 L 65,80" /><path class="trazo t3" d="M 65,20 L 100,20" /><path class="trazo t4" d="M 65,50 L 95,50" /><path class="trazo t5" d="M 65,80 L 100,80" /></g>', pathMin: '<g><path class="trazo t1" d="M 25,50 L 25,80" /><path class="trazo t2" d="M 25,35 L 25.1,35" /><path class="trazo t3" d="M 60,65 L 95,65 C 95,40 60,40 60,65 C 60,90 100,90 100,75" /></g>' },
+            "ai": { e: "🐊", url: "https://res.cloudinary.com/difuwmfsx/video/upload/v1771126875/AI_gtf3bw.mp3", pathMay: '<g><path class="trazo t1" d="M 30,20 L 15,80" /><path class="trazo t2" d="M 30,20 L 45,80" /><path class="trazo t3" d="M 22,55 L 38,55" /><path class="trazo t4" d="M 75,20 L 75,80" /></g>', pathMin: '<g><path class="trazo t1" d="M 50,65 A 12,12 0 1,0 26,65 A 12,12 0 1,0 50,65" /><path class="trazo t2" d="M 50,50 L 50,80" /><path class="trazo t3" d="M 75,50 L 75,80" /><path class="trazo t4" d="M 75,35 L 75.1,35" /></g>' }
         };
 
-        function crearTarjeta(id, esDiptongo = false) {
-            const info = esDiptongo ? DATA_DIPTONGOS[id] : DATA_LETRAS[id];
-            if (!info) return "";
-            const principal = esDiptongo ? (modoMayuscula ? id.toUpperCase() : id) : (modoMayuscula ? id : info.m);
-            const apoyo = esDiptongo ? "" : (modoMayuscula ? info.m : id);
-            const pathLetras = esDiptongo ? (modoMayuscula ? info.pathMay : info.pathMin) : (modoMayuscula ? info.pathMay : info.pathMin);
-            const puente = esDiptongo ? '<path class="puente-rojo" d="M 10,92 Q 60,102 110,92" />' : '';
+        const DATA_SILABAS = {
+            "ma": { e: "🔴", url: "https://res.cloudinary.com/difuwmfsx/video/upload/v1771128126/MA_r9vu4c.mp3", pathMay: '<g><path class="trazo t1" d="M 15,20 L 15,80" /><path class="trazo t2" d="M 15,20 L 35,60" /><path class="trazo t3" d="M 55,20 L 35,60" /><path class="trazo t4" d="M 55,20 L 55,80" /><path class="trazo t5 v-a" d="M 95,20 L 75,80" /><path class="trazo t6 v-a" d="M 95,20 L 115,80" /><path class="trazo t7 v-a" d="M 82,55 L 108,55" /></g>', pathMin: '<g><path class="trazo t1" d="M 10,50 L 10,80" /><path class="trazo t2" d="M 10,55 C 10,40 30,40 30,55 L 30,80" /><path class="trazo t3" d="M 30,55 C 30,40 50,40 50,55 L 50,80" /><path class="trazo t4 v-a" d="M 85,65 A 12,12 0 1,0 61,65 A 12,12 0 1,0 85,65" /><path class="trazo t5 v-a" d="M 85,50 L 85,80" /></g>' },
+            "me": { e: "🟢", url: "https://res.cloudinary.com/difuwmfsx/video/upload/v1771128127/ME_xdvthz.mp3", pathMay: '<g><path class="trazo t1" d="M 15,20 L 15,80" /><path class="trazo t2" d="M 15,20 L 35,60" /><path class="trazo t3" d="M 55,20 L 35,60" /><path class="trazo t4" d="M 55,20 L 55,80" /><path class="trazo t5 v-e" d="M 70,20 L 70,80 L 105,80 M 70,20 L 105,20 M 70,50 L 95,50" /></g>', pathMin: '<g><path class="trazo t1" d="M 10,50 L 10,80" /><path class="trazo t2" d="M 10,55 C 10,40 30,40 30,55 L 30,80" /><path class="trazo t3" d="M 30,55 C 30,40 50,40 50,55 L 50,80" /><path class="trazo t4 v-e" d="M 65,65 L 100,65 C 100,40 65,40 65,65 C 65,90 100,90 100,75" /></g>' },
+            "mi": { e: "🟡", url: "https://res.cloudinary.com/difuwmfsx/video/upload/v1771128129/MI_x1vrg6.mp3", pathMay: '<g><path class="trazo t1" d="M 15,20 L 15,80" /><path class="trazo t2" d="M 15,20 L 35,60" /><path class="trazo t3" d="M 55,20 L 35,60" /><path class="trazo t4" d="M 55,20 L 55,80" /><path class="trazo t5 v-i" d="M 85,20 L 85,80 M 70,20 L 110,20 M 70,80 L 110,80" /></g>', pathMin: '<g><path class="trazo t1" d="M 10,50 L 10,80" /><path class="trazo t2" d="M 10,55 C 10,40 30,40 30,55 L 30,80" /><path class="trazo t3" d="M 30,55 C 30,40 50,40 50,55 L 50,80" /><path class="trazo t4 v-i" d="M 80,50 L 80,80" /><path class="trazo t5 v-i" d="M 80,35 L 80.1,35" /></g>' },
+            "mo": { e: "🔵", url: "https://res.cloudinary.com/difuwmfsx/video/upload/v1771128130/Mo_hvp6fm.mp3", pathMay: '<g><path class="trazo t1" d="M 15,20 L 15,80" /><path class="trazo t2" d="M 15,20 L 35,60" /><path class="trazo t3" d="M 55,20 L 35,60" /><path class="trazo t4" d="M 55,20 L 55,80" /><path class="trazo t5 v-o" d="M 85,20 A 25,30 0 1,0 85.1,20" /></g>', pathMin: '<g><path class="trazo t1" d="M 10,50 L 10,80" /><path class="trazo t2" d="M 10,55 C 10,40 30,40 30,55 L 30,80" /><path class="trazo t3" d="M 30,55 C 30,40 50,40 50,55 L 50,80" /><path class="trazo t4 v-o" d="M 85,65 A 15,15 0 1,0 55,65 A 15,15 0 1,0 85,65" /></g>' },
+            "mu": { e: "⚪", url: "https://res.cloudinary.com/difuwmfsx/video/upload/v1771128132/Mu_nvf6hu.mp3", pathMay: '<g><path class="trazo t1" d="M 15,20 L 15,80" /><path class="trazo t2" d="M 15,20 L 35,60" /><path class="trazo t3" d="M 55,20 L 35,60" /><path class="trazo t4" d="M 55,20 L 55,80" /><path class="trazo t5 v-u" d="M 70,20 L 70,60 C 70,80 105,80 105,60 L 105,20" /></g>', pathMin: '<g><path class="trazo t1" d="M 10,50 L 10,80" /><path class="trazo t2" d="M 10,55 C 10,40 30,40 30,55 L 30,80" /><path class="trazo t3" d="M 30,55 C 30,40 50,40 50,55 L 50,80" /><path class="trazo t4 v-u" d="M 65,50 L 65,65 C 65,80 90,80 90,65 L 90,50" /><path class="trazo t5 v-u" d="M 90,50 L 90,80" /></g>' },
+            "pa": { e: "🔴", url: "https://res.cloudinary.com/difuwmfsx/video/upload/v1771176085/PA_cx1qgq.mp3", pathMay: '<g><path class="trazo t1" d="M 30,20 L 30,80" /><path class="trazo t2" d="M 30,20 C 65,20 65,50 30,50" /><path class="trazo t3 v-a" d="M 95,20 L 75,80" /><path class="trazo t4 v-a" d="M 95,20 L 115,80" /><path class="trazo t5 v-a" d="M 82,55 L 108,55" /></g>', pathMin: '<g><path class="trazo t1" d="M 30,50 L 30,100" /><path class="trazo t2" d="M 30,50 C 65,50 65,80 30,80" /><path class="trazo t3 v-a" d="M 105,65 A 12,12 0 1,0 81,65 A 12,12 0 1,0 105,65" /><path class="trazo t4 v-a" d="M 105,50 L 105,80" /></g>' },
+            "pe": { e: "🟢", url: "https://res.cloudinary.com/difuwmfsx/video/upload/v1771176086/PE_hk48vc.mp3", pathMay: '<g><path class="trazo t1" d="M 30,20 L 30,80" /><path class="trazo t2" d="M 30,20 C 65,20 65,50 30,50" /><path class="trazo t3 v-e" d="M 75,20 L 75,80 L 110,80 M 75,20 L 110,20 M 75,50 L 100,50" /></g>', pathMin: '<g><path class="trazo t1" d="M 30,50 L 30,100" /><path class="trazo t2" d="M 30,50 C 65,50 65,80 30,80" /><path class="trazo t3 v-e" d="M 75,65 L 110,65 C 110,40 75,40 75,65 C 75,90 110,90 110,75" /></g>' },
+            "pi": { e: "🟡", url: "https://res.cloudinary.com/difuwmfsx/video/upload/v1771176105/PI_e0d34h.mp3", pathMay: '<g><path class="trazo t1" d="M 30,20 L 30,80" /><path class="trazo t2" d="M 30,20 C 65,20 65,50 30,50" /><path class="trazo t3 v-i" d="M 95,20 L 95,80 M 80,20 L 110,20 M 80,80 L 110,80" /></g>', pathMin: '<g><path class="trazo t1" d="M 30,50 L 30,100" /><path class="trazo t2" d="M 30,50 C 65,50 65,80 30,80" /><path class="trazo t3 v-i" d="M 90,50 L 90,80" /><path class="trazo t4 v-i" d="M 90,35 L 90.1,35" /></g>' },
+            "po": { e: "🔵", url: "https://res.cloudinary.com/difuwmfsx/video/upload/v1771176107/PO_oaxfp6.mp3", pathMay: '<g><path class="trazo t1" d="M 30,20 L 30,80" /><path class="trazo t2" d="M 30,20 C 65,20 65,50 30,50" /><path class="trazo t3 v-o" d="M 95,20 A 25,30 0 1,0 95.1,20" /></g>', pathMin: '<g><path class="trazo t1" d="M 30,50 L 30,100" /><path class="trazo t2" d="M 30,50 C 65,50 65,80 30,80" /><path class="trazo t3 v-o" d="M 95,65 A 15,15 0 1,0 65,65 A 15,15 0 1,0 95,65" /></g>' },
+            "pu": { e: "⚪", url: "https://res.cloudinary.com/difuwmfsx/video/upload/v1771176109/PU_pwx0wn.mp3", pathMay: '<g><path class="trazo t1" d="M 30,20 L 30,80" /><path class="trazo t2" d="M 30,20 C 65,20 65,50 30,50" /><path class="trazo t3 v-u" d="M 80,20 L 80,60 C 80,80 115,80 115,60 L 115,20" /></g>', pathMin: '<g><path class="trazo t1" d="M 30,50 L 30,100" /><path class="trazo t2" d="M 30,50 C 65,50 65,80 30,80" /><path class="trazo t3 v-u" d="M 75,50 L 75,65 C 75,80 100,80 100,65 L 100,50" /><path class="trazo t4 v-u" d="M 100,50 L 100,80" /></g>' }
+        };
 
-            return `<div class="letter-card ${esDiptongo ? 'diptongo-card' : ''}" onclick="enseñarLetra('${id}', ${esDiptongo})">
+        function crearTarjeta(id, tipo = 'letras') {
+            let info;
+            if (tipo === 'letras') info = DATA_LETRAS[id];
+            else if (tipo === 'diptongos') info = DATA_DIPTONGOS[id];
+            else info = DATA_SILABAS[id];
+            if (!info) return "";
+            const principal = tipo !== 'letras' ? (modoMayuscula ? id.toUpperCase() : id) : (modoMayuscula ? id : info.m);
+            const apoyo = tipo === 'letras' ? (modoMayuscula ? info.m : id) : "";
+            const pathLetras = modoMayuscula ? info.pathMay : info.pathMin;
+            const puente = tipo !== 'letras' ? '<path class="puente-rojo" d="M 10,92 Q 60,102 110,92" />' : '';
+            return `<div class="letter-card card-${id} ${tipo === 'silabas' ? 'silaba-card' : ''} ${tipo === 'diptongos' ? 'diptongo-card' : ''}" onclick="enseñarLetra('${id}', '${tipo}')">
                     <div class="mini-label">${apoyo}</div>
                     <div class="illustration">${info.e || ""}</div>
                     <svg viewBox="0 0 120 100">${RENGLONES_SVG}${puente}${pathLetras}</svg>
@@ -139,45 +177,98 @@
                 </div>`;
         }
 
+        function crearMiniTarjeta(id) {
+            const info = DATA_SILABAS[id];
+            const pathLetras = modoMayuscula ? info.pathMay : info.pathMin;
+            return `<div class="mini-card silaba-card" onclick="añadirPalabra('${id}')">
+                    <svg viewBox="0 0 120 100">${pathLetras}</svg>
+                </div>`;
+        }
+
+        function añadirPalabra(id) {
+            palabraActual.push(id);
+            reproducirAudio(DATA_SILABAS[id].url);
+            renderizarPalabra();
+        }
+
+        function renderizarPalabra() {
+            const container = document.getElementById('word-builder');
+            container.innerHTML = palabraActual.map(id => {
+                const info = DATA_SILABAS[id];
+                const pathLetras = modoMayuscula ? info.pathMay : info.pathMin;
+                return `<div class="mini-card silaba-card"><svg viewBox="0 0 120 100">${pathLetras}</svg></div>`;
+            }).join('');
+        }
+
+        async function leerPalabra() {
+            for (let id of palabraActual) {
+                await new Promise(resolve => {
+                    const audio = new Audio(DATA_SILABAS[id].url);
+                    audio.onended = resolve;
+                    audio.play();
+                });
+            }
+        }
+
         function toggleModo() {
             modoMayuscula = !modoMayuscula;
-            document.getElementById('btn-switch').innerText = modoMayuscula ? "ABC" : "abc";
-            document.getElementById('btn-switch').classList.toggle('active', modoMayuscula);
+            const btn = document.getElementById('btn-switch');
+            if(btn) btn.innerText = modoMayuscula ? "ABC" : "abc";
+            document.getElementById('main-body').classList.toggle('active-mayus', modoMayuscula);
             inicializarApp();
             cambiarSeccion(seccionActual);
         }
 
         function cambiarSeccion(id) {
             seccionActual = id;
-            if (audioActual) { audioActual.pause(); audioActual = null; }
+            if (audioActual) { audioActual.pause(); }
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.sections-nav .nav-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-            if(document.getElementById('btn-' + id)) document.getElementById('btn-' + id).classList.add('active');
+            const sec = document.getElementById(id);
+            if(sec) sec.classList.add('active');
+            const btn = document.getElementById('btn-' + id);
+            if(btn) btn.classList.add('active');
+            if (id === 'constructor') inicializarConstructor();
         }
 
-        function enseñarLetra(id, esDiptongo) {
+        function inicializarConstructor() {
+            const pool = document.getElementById('constructor-pool');
+            pool.innerHTML = Object.keys(DATA_SILABAS).map(id => crearMiniTarjeta(id)).join('');
+        }
+
+        function enseñarLetra(id, tipo) {
             const card = event.currentTarget;
             card.classList.remove('animating');
             void card.offsetWidth; 
             card.classList.add('animating');
+            let info;
+            if (tipo === 'letras') info = DATA_LETRAS[id];
+            else if (tipo === 'diptongos') info = DATA_DIPTONGOS[id];
+            else info = DATA_SILABAS[id];
+            reproducirAudio(info.url);
+        }
+
+        function reproducirAudio(url) {
             if (audioActual) { audioActual.pause(); audioActual.currentTime = 0; }
-            const info = esDiptongo ? DATA_DIPTONGOS[id] : DATA_LETRAS[id];
-            if (info && info.url) { audioActual = new Audio(info.url); audioActual.play(); }
+            if (url) { audioActual = new Audio(url); audioActual.play(); }
         }
 
         function limpiarTodo() {
-            if (audioActual) { audioActual.pause(); audioActual = null; }
-            document.querySelectorAll('.letter-card').forEach(card => {
-                card.classList.remove('animating');
-            });
+            if (audioActual) { audioActual.pause(); }
+            palabraActual = [];
+            if (seccionActual === 'constructor') {
+                renderizarPalabra();
+            } else {
+                document.querySelectorAll('.letter-card').forEach(card => card.classList.remove('animating'));
+            }
         }
 
         function inicializarApp() {
             document.getElementById('vocales').innerHTML = ['A','E','I','O','U'].map(l => crearTarjeta(l)).join('');
             document.getElementById('consonantes').innerHTML = ['M','P','L','S','T','D'].map(l => crearTarjeta(l)).join('');
-            document.getElementById('diptongos').innerHTML = Object.keys(DATA_DIPTONGOS).map(l => crearTarjeta(l, true)).join('');
             document.getElementById('completo').innerHTML = Object.keys(DATA_LETRAS).sort().map(l => crearTarjeta(l)).join('');
+            document.getElementById('diptongos').innerHTML = Object.keys(DATA_DIPTONGOS).map(l => crearTarjeta(l, 'diptongos')).join('');
+            document.getElementById('silabas').innerHTML = Object.keys(DATA_SILABAS).map(l => crearTarjeta(l, 'silabas')).join('');
         }
 
         inicializarApp();
